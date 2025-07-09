@@ -46,7 +46,7 @@ func New(adapter Adapter, opts ...Option) *Fetcher {
 	}
 	return &Fetcher{
 		config:  c,
-		clock:   clock.NewSystem(), // TODO: Release!
+		clock:   clock.NewSystem(),
 		adapter: adapter,
 	}
 }
