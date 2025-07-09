@@ -22,6 +22,57 @@ func (m *mockAdapter) Fetch(ctx context.Context) (Token, error) {
 	return args.Get(0).(Token), args.Error(1)
 }
 
+func TestNew(t *testing.T) {
+	a := new(mockAdapter)
+	type args struct {
+		adapter Adapter
+		opts    []Option
+	}
+	tests := []struct {
+		name        string
+		args        args
+		wantConfig  config
+		wantAdapter Adapter
+	}{
+		{
+			name: "New returns new fetcher with default values",
+			args: args{
+				adapter: a,
+			},
+			wantConfig: config{
+				tokenExpiryBuffer: time.Minute,
+			},
+			wantAdapter: a,
+		},
+		{
+			name: "New returns new fetcher with provided options",
+			args: args{
+				adapter: a,
+				opts: []Option{
+					WithTokenExpiryBuffer(time.Hour),
+				},
+			},
+			wantConfig: config{
+				tokenExpiryBuffer: time.Hour,
+			},
+			wantAdapter: a,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := New(tt.args.adapter, tt.args.opts...)
+			assert.Equalf(t, tt.wantConfig, got.config, "New(%v, %v)", tt.args.adapter, tt.args.opts)
+			assert.Equalf(t, tt.wantAdapter, got.adapter, "New(%v, %v)", tt.args.adapter, tt.args.opts)
+
+			// Assert default values not overwritten
+			wantDefaultConfig := config{
+				tokenExpiryBuffer: time.Minute,
+			}
+			assert.Equalf(t, wantDefaultConfig, defaultConfig, "New(%v, %v) defaultConfig", tt.args.adapter, tt.args.opts)
+		})
+	}
+}
+
 func TestFetcher_Fetch(t *testing.T) {
 	now := time.Date(2030, 1, 2, 0, 0, 0, 0, time.UTC)
 	tok := Token{AccessToken: "token-123"}
