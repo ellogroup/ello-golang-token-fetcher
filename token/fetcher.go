@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// Token represents an access token
 type Token struct {
 	AccessToken  string    `json:"access_token"`
 	TokenType    string    `json:"token_type,omitempty"`
@@ -18,6 +19,7 @@ type Token struct {
 	CreatedAt    time.Time `json:"created_at,omitempty"`
 }
 
+// Fetcher fetches access tokens stored by the Ello Token Rotator
 type Fetcher struct {
 	config  config
 	clock   clock.Clock
@@ -35,10 +37,12 @@ var defaultConfig = config{
 
 type Option func(*config)
 
+// WithTokenExpiryBuffer sets the duration before the expiry date when a token should be refreshed
 func WithTokenExpiryBuffer(buffer time.Duration) Option {
 	return func(c *config) { c.tokenExpiryBuffer = buffer }
 }
 
+// New returns a new Fetcher with the provided Adapter
 func New(adapter Adapter, opts ...Option) *Fetcher {
 	c := defaultConfig
 	for _, opt := range opts {
@@ -51,6 +55,7 @@ func New(adapter Adapter, opts ...Option) *Fetcher {
 	}
 }
 
+// NewAWSSecretsManagerFetcher returns a new Fetcher with the awsSecretsManagerClient Adapter
 func NewAWSSecretsManagerFetcher(smClient *secretsmanager.Client, smKey string, opts ...Option) *Fetcher {
 	return New(awsSecretsManagerAdapter{
 		client: smClient,
